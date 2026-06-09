@@ -1,0 +1,11 @@
+{
+  "name": "Tor testowy",
+  "segments": [
+    { "type": "straight", "length": 800 },
+    { "type": "corner", "radius": 60, "angle": 90 },
+    { "type": "straight", "length": 400 },
+    { "type": "corner", "radius": 40, "angle": 120 },
+    { "type": "straight", "length": 600 }
+  ]
+}
+
