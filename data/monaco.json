@@ -1,0 +1,18 @@
+{
+  "name": "Monaco GP (uproszczona)",
+  "segments": [
+    { "type": "straight", "length": 300 },
+    { "type": "corner", "radius": 35, "angle": 85 },
+    { "type": "straight", "length": 175 },
+    { "type": "corner", "radius": 150, "angle": 30 },
+    { "type": "straight", "length": 450 },
+    { "type": "corner", "radius": 80, "angle": 75 },
+    { "type": "straight", "length": 600 },
+    { "type": "corner", "radius": 45, "angle": 95 },
+    { "type": "straight", "length": 200 },
+    { "type": "corner", "radius": 30, "angle": 110 },
+    { "type": "straight", "length": 350 },
+    { "type": "corner", "radius": 55, "angle": 90 }
+  ]
+}
+

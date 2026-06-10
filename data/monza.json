@@ -1,0 +1,17 @@
+{
+  "name": "Monza GP (uproszczona)",
+  "segments": [
+    { "type": "straight", "length": 1100 },
+    { "type": "corner", "radius": 120, "angle": 70 },
+    { "type": "straight", "length": 650 },
+    { "type": "corner", "radius": 90, "angle": 90 },
+    { "type": "straight", "length": 380 },
+    { "type": "corner", "radius": 60, "angle": 110 },
+    { "type": "straight", "length": 900 },
+    { "type": "corner", "radius": 100, "angle": 85 },
+    { "type": "straight", "length": 500 },
+    { "type": "corner", "radius": 45, "angle": 95 },
+    { "type": "straight", "length": 750 }
+  ]
+}
+
