@@ -11,7 +11,7 @@ DEFAULT_TRACK = Path(__file__).parent / "data" / "tracks.json"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Symulator okrążenia bolidu F1 (Etap 1)")
+    parser = argparse.ArgumentParser(description="Symulator okrążenia bolidu F1")
     parser.add_argument(
         "--track", type=str, default=str(DEFAULT_TRACK),
         help="Ścieżka do pliku JSON z definicją toru.",
@@ -21,8 +21,17 @@ def parse_args() -> argparse.Namespace:
         help="Krok czasowy symulacji [s].",
     )
     parser.add_argument(
+        "--aero-config", type=str, default="balanced",
+        choices=["high_downforce", "low_drag", "balanced"],
+        help="Konfiguracja aerodynamiczna: high_downforce (Monaco), low_drag (Monza), balanced (default).",
+    )
+    parser.add_argument(
         "--no-plot", action="store_true",
         help="Nie wyświetlaj wykresów telemetrii.",
+    )
+    parser.add_argument(
+        "--show-aero", action="store_true",
+        help="Pokaż dodatkowe wykresy sił aerodynamicznych.",
     )
     return parser.parse_args()
 
@@ -30,7 +39,19 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    car = Car()
+    # Wybór konfiguracji aerodynamicznej
+    if args.aero_config == "high_downforce":
+        car = Car.high_downforce()
+        print(f"Konfiguracja: HIGH DOWNFORCE")
+    elif args.aero_config == "low_drag":
+        car = Car.low_drag()
+        print(f"Konfiguracja: LOW DRAG")
+    else:
+        car = Car.balanced()
+        print(f"Konfiguracja: BALANCED")
+    
+    print(f"  Cd={car.drag_coefficient:.2f}, CL={car.lift_coefficient:.2f}\n")
+    
     track = Track.from_json(args.track)
 
     print(f"Tor: {track.name}")
@@ -44,8 +65,11 @@ def main() -> None:
 
     if not args.no_plot:
         try:
-            from visualization.plots import plot_telemetry
+            from visualization.plots import plot_telemetry, plot_aerodynamics
             plot_telemetry(result.telemetry)
+            
+            if args.show_aero:
+                plot_aerodynamics(result.telemetry)
         except ImportError:
             print("\n[Uwaga] matplotlib nie jest zainstalowany — pomijam wykresy.")
 

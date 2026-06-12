@@ -102,6 +102,82 @@ def demo_track_comparison():
     print("\n💡 Segment/km = gęstość zakrętów (więcej = bardziej techniczny tor)")
 
 
+def demo_aerodynamics():
+    """Demonstracja wpływu aerodynamiki (Etap 3)."""
+    print("\n" + "="*80)
+    print("DEMONSTRACJA: AERODYNAMIKA I KONFIGURACJE")
+    print("="*80 + "\n")
+
+    # 3 konfiguracje aerodynamiczne
+    configs = [
+        ("HIGH DOWNFORCE 🏔️", Car.high_downforce()),
+        ("BALANCED ⚖️", Car.balanced()),
+        ("LOW DRAG 🚀", Car.low_drag()),
+    ]
+
+    # Testuj na dwóch torach
+    tracks_to_test = [
+        ("data/monaco.json", "Monaco GP (techniczny - dużo zakrętów)"),
+        ("data/monza.json", "Monza GP (szybki - długie proste)"),
+    ]
+
+    for track_path, track_description in tracks_to_test:
+        try:
+            track = Track.from_json(track_path)
+        except FileNotFoundError:
+            print(f"⚠️  Plik {track_path} nie istnieje - pomijam")
+            continue
+
+        print(f"📍 {track_description}")
+        print(f"   Długość: {track.total_length:.1f} m")
+
+        # Analiza toru
+        corners = [s for s in track.segments if s.type == "corner"]
+        straights = [s for s in track.segments if s.type == "straight"]
+        total_straight_length = sum(s.length for s in straights)
+        print(f"   Proste: {len(straights)} ({total_straight_length:.0f} m), Zakręty: {len(corners)}\n")
+
+        print(f"{'Konfiguracja':<25} {'Cd':<8} {'CL':<8} {'Czas':<10} {'V_max':<12} {'Max Down':<12}")
+        print("-" * 80)
+
+        results = []
+        for name, car in configs:
+            sim = Simulator(car=car, track=track, dt=0.01)
+            result = sim.run()
+            results.append((name, result))
+
+            print(
+                f"{name:<25} "
+                f"{car.drag_coefficient:<8.2f} "
+                f"{car.lift_coefficient:<8.2f} "
+                f"{result.lap_time:<10.2f} "
+                f"{result.max_velocity * 3.6:<12.1f} "
+                f"{result.max_downforce:<12.0f}"
+            )
+
+        # Znajdź najszybszy
+        fastest_idx = min(range(len(results)), key=lambda i: results[i][1].lap_time)
+        fastest_name, fastest_result = results[fastest_idx]
+
+        print(f"\n🏆 NAJSZYBSZY: {fastest_name} ({fastest_result.lap_time:.2f} s)")
+        print("\nRÓŻNICE CZASOWE:")
+        for name, result in results:
+            delta = result.lap_time - fastest_result.lap_time
+            emoji = "🏆" if delta == 0 else "  "
+            print(f"{emoji} {name:25s} +{delta:.2f} s")
+
+        print()
+
+    print("="*80)
+    print("💡 ANALIZA:")
+    print("   • Cd = opór aerodynamiczny (niższy = większa V-max na prostych)")
+    print("   • CL = docisk aerodynamiczny (wyższy = szybsze przejazdy przez zakręty)")
+    print("   • Monaco: dużo ostrych zakrętów → HIGH DOWNFORCE wygrywa!")
+    print("   •  Monza: bardzo długie proste → LOW DRAG zdecydowanie najlepszy")
+    print("   • Setup ma OGROMNY wpływ - różnica nawet kilka sekund!")
+    print("="*80)
+
+
 def main():
     print("\n" + "🏎️ " * 26)
     print("SYMULATOR F1 - DEMONSTRACJA")
@@ -110,6 +186,11 @@ def main():
     demo_corner_analysis()
     demo_braking()
     demo_track_comparison()
+    demo_aerodynamics()
+
+    print("\n" + "="*80)
+    print("✅ DEMONSTRACJA ZAKOŃCZONA")
+    print("="*80)
 
 
 if __name__ == "__main__":

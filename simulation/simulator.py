@@ -13,13 +13,20 @@ class Telemetry:
     velocity: list[float] = field(default_factory=list)
     acceleration: list[float] = field(default_factory=list)
     segment_index: list[int] = field(default_factory=list)
+    drag_force: list[float] = field(default_factory=list)
+    downforce: list[float] = field(default_factory=list)
+    state: list[str] = field(default_factory=list)  # "accelerating", "braking", "coasting", "cornering"
 
-    def record(self, t: float, x: float, v: float, a: float, seg: int) -> None:
+    def record(self, t: float, x: float, v: float, a: float, seg: int,
+               drag: float = 0.0, down: float = 0.0, state: str = "coasting") -> None:
         self.time.append(t)
         self.position.append(x)
         self.velocity.append(v)
         self.acceleration.append(a)
         self.segment_index.append(seg)
+        self.drag_force.append(drag)
+        self.downforce.append(down)
+        self.state.append(state)
 
 
 @dataclass
@@ -29,6 +36,10 @@ class SimulationResult:
     max_velocity: float
     avg_velocity: float
     total_distance: float
+    max_drag: float = 0.0
+    max_downforce: float = 0.0
+    avg_drag: float = 0.0
+    avg_downforce: float = 0.0
 
     def summary(self) -> str:
         return (
@@ -37,7 +48,12 @@ class SimulationResult:
             f"Prędkość maksymalna: {self.max_velocity * 3.6:.1f} km/h "
             f"({self.max_velocity:.1f} m/s)\n"
             f"Prędkość średnia:    {self.avg_velocity * 3.6:.1f} km/h "
-            f"({self.avg_velocity:.1f} m/s)"
+            f"({self.avg_velocity:.1f} m/s)\n"
+            f"\nAerodynamika:\n"
+            f"Max drag:            {self.max_drag:.0f} N\n"
+            f"Max downforce:       {self.max_downforce:.0f} N\n"
+            f"Avg drag:            {self.avg_drag:.0f} N\n"
+            f"Avg downforce:       {self.avg_downforce:.0f} N"
         )
 
 
@@ -102,26 +118,31 @@ class Simulator:
         while state["position"] < segment_end:
             v = state["velocity"]
 
+            # Oblicz siły aerodynamiczne
+            f_drag = forces.drag_force(
+                v, self.car.drag_coefficient, self.car.frontal_area
+            )
+            f_downforce = forces.downforce(
+                v, self.car.lift_coefficient, self.car.frontal_area
+            )
+
             # Sprawdź czy jesteśmy w fazie hamowania
             if braking_point is not None and state["position"] >= braking_point:
                 # Hamowanie
-                f_drag = forces.drag_force(
-                    v, self.car.drag_coefficient, self.car.frontal_area
-                )
                 net_force = -(self.car.max_braking_force + f_drag)
                 a = dynamics.acceleration(net_force, self.car.mass)
+                vehicle_state = "braking"
 
                 # Nie hamuj poniżej prędkości docelowej
                 if target_velocity is not None and v <= target_velocity:
                     a = 0.0
+                    vehicle_state = "coasting"
             else:
                 # Przyspieszanie
                 f_engine = forces.engine_force(self.car.engine_force)
-                f_drag = forces.drag_force(
-                    v, self.car.drag_coefficient, self.car.frontal_area
-                )
                 net_force = f_engine - f_drag
                 a = dynamics.acceleration(net_force, self.car.mass)
+                vehicle_state = "accelerating"
 
             new_x, new_v = dynamics.integrate_step(
                 state["position"], v, a, self.dt
@@ -131,7 +152,8 @@ class Simulator:
             state["time"] += self.dt
 
             telemetry.record(
-                state["time"], state["position"], state["velocity"], a, seg_index
+                state["time"], state["position"], state["velocity"], a, seg_index,
+                drag=f_drag, down=f_downforce, state=vehicle_state
             )
 
     # Symulacja zakrętu - utrzymywanie prędkości bliskiej maksymalnej bezpiecznej
@@ -155,30 +177,32 @@ class Simulator:
         while state["position"] < segment_end:
             v = state["velocity"]
 
+            # Oblicz siły aerodynamiczne
+            f_drag = forces.drag_force(
+                v, self.car.drag_coefficient, self.car.frontal_area
+            )
+            f_downforce = forces.downforce(
+                v, self.car.lift_coefficient, self.car.frontal_area
+            )
+
             # Jeśli jedziemy wolniej niż max, próbujemy delikatnie przyspieszyć
             if v < max_v * 0.95:  # 5% margines
                 # Delikatne przyspieszanie w zakręcie (ograniczona moc)
                 f_engine = forces.engine_force(self.car.engine_force) * 0.3
-                f_drag = forces.drag_force(
-                    v, self.car.drag_coefficient, self.car.frontal_area
-                )
                 # Siła dośrodkowa nie wpływa na ruch wzdłuż toru (tylko poprzecznie)
                 net_force = f_engine - f_drag
                 a = dynamics.acceleration(net_force, self.car.mass)
+                vehicle_state = "cornering_accel"
             elif v > max_v:
                 # Za szybko - lekkie hamowanie
-                f_drag = forces.drag_force(
-                    v, self.car.drag_coefficient, self.car.frontal_area
-                )
                 braking_force = self.car.max_braking_force * 0.2  # Delikatne hamowanie
                 net_force = -(braking_force + f_drag)
                 a = dynamics.acceleration(net_force, self.car.mass)
+                vehicle_state = "cornering_brake"
             else:
                 # Idealna prędkość - utrzymywanie
-                f_drag = forces.drag_force(
-                    v, self.car.drag_coefficient, self.car.frontal_area
-                )
                 a = dynamics.acceleration(-f_drag, self.car.mass)
+                vehicle_state = "cornering"
 
             new_x, new_v = dynamics.integrate_step(
                 state["position"], v, a, self.dt
@@ -188,14 +212,15 @@ class Simulator:
             state["time"] += self.dt
 
             telemetry.record(
-                state["time"], state["position"], state["velocity"], a, seg_index
+                state["time"], state["position"], state["velocity"], a, seg_index,
+                drag=f_drag, down=f_downforce, state=vehicle_state
             )
 
     def run(self) -> SimulationResult:
         telemetry = Telemetry()
         state = {"position": 0.0, "velocity": 0.0, "time": 0.0}
 
-        telemetry.record(0.0, 0.0, 0.0, 0.0, 0)
+        telemetry.record(0.0, 0.0, 0.0, 0.0, 0, drag=0.0, down=0.0, state="start")
 
         for i, segment in enumerate(self.track):
             if segment.type == "straight":
@@ -206,6 +231,12 @@ class Simulator:
         velocities = telemetry.velocity
         max_v = max(velocities) if velocities else 0.0
         avg_v = (state["position"] / state["time"]) if state["time"] > 0 else 0.0
+        
+        # Statystyki aerodynamiczne
+        max_drag = max(telemetry.drag_force) if telemetry.drag_force else 0.0
+        max_down = max(telemetry.downforce) if telemetry.downforce else 0.0
+        avg_drag = sum(telemetry.drag_force) / len(telemetry.drag_force) if telemetry.drag_force else 0.0
+        avg_down = sum(telemetry.downforce) / len(telemetry.downforce) if telemetry.downforce else 0.0
 
         return SimulationResult(
             telemetry=telemetry,
@@ -213,5 +244,9 @@ class Simulator:
             max_velocity=max_v,
             avg_velocity=avg_v,
             total_distance=state["position"],
+            max_drag=max_drag,
+            max_downforce=max_down,
+            avg_drag=avg_drag,
+            avg_downforce=avg_down,
         )
 

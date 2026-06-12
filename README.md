@@ -1,6 +1,6 @@
 # Symulator okrążenia bolidu F1
 
-Symulator ruchu bolidu Formuły 1 napisany w Pythonie z pełną fizyką zakrętów, hamowaniem i siłami aerodynamicznymi.
+Symulator ruchu bolidu Formuły 1 napisany w Pythonie z pełną fizyką zakrętów, hamowaniem i zaawansowaną aerodynamiką.
 
 ## 🎯 Cel projektu
 
@@ -9,6 +9,15 @@ Symulator demonstruje praktyczne zastosowanie:
 - Sił aerodynamicznych (opór i docisk)
 - Ruchu po okręgu (siła dośrodkowa)
 - Ograniczeń przyczepności
+- Konfiguracji aerodynamicznych dostosowanych do torów
+
+## ✨ Funkcje
+
+- ✅ **Pełna fizyka:** II zasada Newtona, siły aerodynamiczne, przyczepność
+- ✅ **3 konfiguracje aerodynamiczne:** HIGH DOWNFORCE, LOW DRAG, BALANCED
+- ✅ **Telemetria:** prędkość, przyspieszenie, siły aerodynamiczne, stan pojazdu
+- ✅ **Wizualizacja:** wykresy prędkości, przyspieszenia, drag, downforce
+- ✅ **Porównania:** analiza wpływu setupu aero na czasy okrążeń
 
 ## 📦 Instalacja
 
@@ -22,35 +31,55 @@ pip install -r requirements.txt
 
 ### Symulacja podstawowa
 
-Tor domyślny z wykresami:
+Tor domyślny (balanced setup):
 ```bash
 python main.py
 ```
-Bez wykresów:
+
+Wybór konfiguracji aerodynamicznej:
 ```bash
-python main.py --no-plot
+python main.py --aero-config high_downforce
+python main.py --aero-config low_drag
+python main.py --aero-config balanced
 ```
+
 Wybór toru:
 ```bash
 python main.py --track data/monaco.json
+python main.py --track data/monza.json
 ```
-Krok czasowy 5ms:
+
+Wykresy sił aerodynamicznych:
+```bash
+python main.py --show-aero
+```
+
+Precyzyjna symulacja (krok 5ms):
 ```bash
 python main.py --dt 0.005
 ```
 
-### Narzędzia pomocnicze
-Ogólna demonstracja symulatora:
+### Narzędzia analizy
+
+Porównanie wszystkich konfiguracji aero na danym torze:
 ```bash
-python demo.py
+python compare_aero.py data/monaco.json
+python compare_aero.py data/monza.json
 ```
+
+Porównanie wszystkich torów:
+```bash
+python compare_tracks.py
+```
+
 Analiza prędkości w zakrętach:
 ```bash
 python test_corner_speeds.py
 ```
-Porównanie wszystkich torów:
+
+Demonstracja ogólna:
 ```bash
-python compare_tracks.py
+python demo.py
 ```
 
 ## 🏁 Dostępne tory
@@ -73,15 +102,5 @@ python compare_tracks.py
 ### Zasady ruchu:
 - **Ruch po prostej:** przyspieszanie z uwzględnieniem oporu
 - **Automatyczne hamowanie** przed zakrętami
-- **Regulacja prędkości** w zakręcie (przyspieszanie/hamowanie)
-
-### Parametry bolidu (klasa `Car`)
-```python
-mass = 798.0 kg                    # masa minimalna F1
-engine_force = 8000.0 N            # siła napędowa
-drag_coefficient = 0.9             # współczynnik oporu
-lift_coefficient = 3.0             # współczynnik docisku
-frontal_area = 1.5 m²              # pole czołowe
-tire_friction = 1.7                # przyczepność opon
-max_braking_force = 40000.0 N      # max siła hamowania
-```
+- **Regulacja prędkości** w zakręcie (przyspieszanie/hamowanie/utrzymywanie)
+- **Wpływ docisku** na maksymalną prędkość w zakrętach

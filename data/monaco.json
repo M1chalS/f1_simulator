@@ -1,18 +1,199 @@
 {
-  "name": "Monaco GP (uproszczona)",
+  "name": "Monaco GP",
   "segments": [
-    { "type": "straight", "length": 300 },
-    { "type": "corner", "radius": 35, "angle": 85 },
-    { "type": "straight", "length": 175 },
-    { "type": "corner", "radius": 150, "angle": 30 },
-    { "type": "straight", "length": 450 },
-    { "type": "corner", "radius": 80, "angle": 75 },
-    { "type": "straight", "length": 600 },
-    { "type": "corner", "radius": 45, "angle": 95 },
-    { "type": "straight", "length": 200 },
-    { "type": "corner", "radius": 30, "angle": 110 },
-    { "type": "straight", "length": 350 },
-    { "type": "corner", "radius": 55, "angle": 90 }
+    {
+      "type": "straight",
+      "length": 280
+    },
+    {
+      "type": "corner",
+      "radius": 12,
+      "angle": 80,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 175
+    },
+    {
+      "type": "corner",
+      "radius": 150,
+      "angle": 30,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 80
+    },
+    {
+      "type": "corner",
+      "radius": 45,
+      "angle": 50,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 50
+    },
+    {
+      "type": "corner",
+      "radius": 30,
+      "angle": 45,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 60
+    },
+    {
+      "type": "corner",
+      "radius": 15,
+      "angle": 80,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 50
+    },
+    {
+      "type": "corner",
+      "radius": 10,
+      "angle": 180,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 55
+    },
+    {
+      "type": "corner",
+      "radius": 18,
+      "angle": 70,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 60
+    },
+    {
+      "type": "corner",
+      "radius": 20,
+      "angle": 90,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 40
+    },
+    {
+      "type": "corner",
+      "radius": 190,
+      "angle": 30,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 80
+    },
+    {
+      "type": "corner",
+      "radius": 8,
+      "angle": 60,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 20
+    },
+    {
+      "type": "corner",
+      "radius": 8,
+      "angle": 60,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 90
+    },
+    {
+      "type": "corner",
+      "radius": 25,
+      "angle": 50,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 95
+    },
+    {
+      "type": "corner",
+      "radius": 12,
+      "angle": 50,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 20
+    },
+    {
+      "type": "corner",
+      "radius": 12,
+      "angle": 50,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 40
+    },
+    {
+      "type": "corner",
+      "radius": 15,
+      "angle": 50,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 25
+    },
+    {
+      "type": "corner",
+      "radius": 15,
+      "angle": 50,
+      "direction": "left"
+    },
+    {
+      "type": "straight",
+      "length": 40
+    },
+    {
+      "type": "corner",
+      "radius": 18,
+      "angle": 45,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 50
+    },
+    {
+      "type": "corner",
+      "radius": 12,
+      "angle": 150,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 100
+    },
+    {
+      "type": "corner",
+      "radius": 20,
+      "angle": 70,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 280
+    }
   ]
 }
-

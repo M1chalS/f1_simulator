@@ -10,6 +10,7 @@ class Segment:
     length: float | None = None
     radius: float | None = None
     angle: float | None = None
+    direction: str | None = None  # dla zakrętów: "left" lub "right"
 
     def __post_init__(self) -> None:
         if self.type == "straight":
@@ -20,6 +21,8 @@ class Segment:
                 raise ValueError("Zakręt wymaga dodatniego promienia 'radius'.")
             if self.angle is None or self.angle <= 0:
                 raise ValueError("Zakręt wymaga dodatniego kąta 'angle'.")
+            if self.direction and self.direction not in ["left", "right"]:
+                raise ValueError(f"Direction musi być 'left' lub 'right', otrzymano: {self.direction}")
         else:
             raise ValueError(f"Nieznany typ segmentu: {self.type!r}")
 
