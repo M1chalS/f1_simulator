@@ -18,34 +18,45 @@ def downforce(velocity: float, lift_coefficient: float,
               frontal_area: float, air_density: float = AIR_DENSITY) -> float:
     return 0.5 * air_density * lift_coefficient * frontal_area * velocity ** 2
 
-# Zwraca siłę napędową silnika
-# TODO Dokończyć
-def engine_force(max_engine_force: float) -> float:
-    return max_engine_force
+# Zwraca siłę napędową dostępną przy danej prędkości.
+def engine_force(velocity: float, max_power: float,
+                 traction_limit: float) -> float:
+    v = max(velocity, 1.0)
+    power_limited = max_power / v
+    return min(power_limited, traction_limit)
+
+# Maksymalna siła wzdłużna, jaką opony mogą przekazać na asfalt.
+def traction_limit(velocity: float, tire_friction: float, mass: float,
+                   lift_coefficient: float, frontal_area: float,
+                   air_density: float = AIR_DENSITY,
+                   gravity: float = GRAVITY) -> float:
+    f_down = downforce(velocity, lift_coefficient, frontal_area, air_density)
+    normal_force = mass * gravity + f_down
+    return tire_friction * normal_force
+
+# Maksymalne boczne przyspieszenie, jakie opony F1 są w stanie utrzymać [g].
+MAX_LATERAL_G = 5.5
 
 # Oblicza maksymalną bezpieczną prędkość w zakręcie.
 def max_corner_velocity(radius: float, tire_friction: float, mass: float,
                         lift_coefficient: float, frontal_area: float,
                         air_density: float = AIR_DENSITY,
-                        gravity: float = GRAVITY) -> float:
-    # Współczynnik dla docisku
+                        gravity: float = GRAVITY,
+                        max_lateral_g: float = MAX_LATERAL_G) -> float:
+    # Limit saturacji opon: niezależnie od docisku opona nie przekroczy pewnego
+    v_sat = math.sqrt(max_lateral_g * gravity * radius)
+
+    # Limit z bilansu przyczepności (model punktowy z dociskiem):
     k = radius * tire_friction * 0.5 * air_density * lift_coefficient * frontal_area / mass
 
     # Zabezpieczenie przed dzieleniem przez zero lub wartościami ujemnymi
     if k >= 1.0:
-        # Przy bardzo silnym docisku teoretycznie prędkość mogłaby być nieograniczona
-        return 150.0  # ~540 km/h - górne ograniczenie
+        return v_sat
 
-    denominator = 1.0 - k
-    if denominator <= 0:
-        return 150.0
+    v_grip = math.sqrt(radius * tire_friction * gravity / (1.0 - k))
 
-    v_max_squared = radius * tire_friction * gravity / denominator
-
-    if v_max_squared < 0:
-        return 0.0
-
-    return math.sqrt(v_max_squared)
+    # Rzeczywista prędkość = mniejszy z dwóch limitów.
+    return min(v_grip, v_sat)
 
 # Oblicza drogę hamowania od prędkości początkowej do końcowej.
 def braking_distance(initial_velocity: float, final_velocity: float,
@@ -109,10 +120,6 @@ def braking_distance_precise(initial_velocity: float, final_velocity: float,
 # Oblicza energię rozpraszaną podczas hamowania
 def braking_energy(initial_velocity: float, final_velocity: float,
                    mass: float) -> float:
-    """
-    Oblicza energię kinetyczną rozpraszaną podczas hamowania [J].
-    E = 0.5 * m * (v_i^2 - v_f^2)
-    """
     return 0.5 * mass * (initial_velocity**2 - final_velocity**2)
 
 

@@ -103,29 +103,10 @@ class Simulator:
         segment_end = segment_start + segment.segment_length()
 
         corner_info = self._get_next_corner_info(seg_index)
-
-        braking_point = None
-        target_velocity = None
-
-        if corner_info is not None:
-            distance_to_corner, max_corner_v = corner_info
-            current_v = state["velocity"]
-
-            if current_v > max_corner_v:
-                brake_dist = forces.braking_distance(
-                    initial_velocity=current_v,
-                    final_velocity=max_corner_v,
-                    max_braking_force=self.car.max_braking_force,
-                    mass=self.car.mass,
-                    drag_coefficient=self.car.drag_coefficient,
-                    frontal_area=self.car.frontal_area
-                )
-
-                # Punkt hamowania = koniec prostej - dystans do zakrętu + margines bezpieczeństwa (95% drogi hamowania)
-                braking_point = segment_end + distance_to_corner - brake_dist * 1.05
-                target_velocity = max_corner_v
+        target_velocity = corner_info[1] if corner_info is not None else None
 
         # Symulacja prostej
+        vehicle_state = "accelerating"
         while state["position"] < segment_end:
             v = state["velocity"]
 
@@ -137,9 +118,26 @@ class Simulator:
                 v, self.car.lift_coefficient, self.car.frontal_area
             )
 
-            # Sprawdź czy jesteśmy w fazie hamowania
-            if braking_point is not None and state["position"] >= braking_point:
-                # Rejestruj punkt hamowania (tylko raz)
+            # Czy MUSIMY już hamować? Decyzję podejmujemy DYNAMICZNIE co krok na
+            # podstawie AKTUALNEJ prędkości i pozostałego dystansu do zakrętu
+            need_brake = False
+            if corner_info is not None and v > target_velocity:
+                distance_to_corner, max_corner_v = corner_info
+                remaining = (segment_end - state["position"]) + distance_to_corner
+                brake_dist = forces.braking_distance(
+                    initial_velocity=v,
+                    final_velocity=max_corner_v,
+                    max_braking_force=self.car.max_braking_force,
+                    mass=self.car.mass,
+                    drag_coefficient=self.car.drag_coefficient,
+                    frontal_area=self.car.frontal_area
+                )
+                # Margines bezpieczeństwa 2% — zaczynamy hamować nieco wcześniej.
+                if remaining <= brake_dist * 1.02:
+                    need_brake = True
+
+            if need_brake:
+                # Rejestruj punkt hamowania (tylko raz, przy wejściu w hamowanie)
                 if vehicle_state != "braking":
                     telemetry.record_braking_point(state["position"], v, target_velocity or 0.0)
 
@@ -153,8 +151,15 @@ class Simulator:
                     a = 0.0
                     vehicle_state = "coasting"
             else:
-                # Przyspieszanie
-                f_engine = forces.engine_force(self.car.engine_force)
+                # Przyspieszanie — siła ograniczona mocą silnika ORAZ przyczepnością
+                # (przyczepność rośnie z dociskiem, więc docisk pomaga na wyjściu z zakrętu)
+                f_traction = forces.traction_limit(
+                    v, self.car.tire_friction, self.car.mass,
+                    self.car.lift_coefficient, self.car.frontal_area
+                )
+                f_engine = forces.engine_force(
+                    v, self.car.engine_power, f_traction
+                )
                 net_force = f_engine - f_drag
                 a = dynamics.acceleration(net_force, self.car.mass)
                 vehicle_state = "accelerating"
@@ -162,6 +167,9 @@ class Simulator:
             new_x, new_v = dynamics.integrate_step(
                 state["position"], v, a, self.dt
             )
+            # Ogranicznik prędkości (przełożenia skrzyni biegów).
+            if new_v > self.car.max_speed:
+                new_v = self.car.max_speed
             state["position"] = new_x
             state["velocity"] = new_v
             state["time"] += self.dt
@@ -200,18 +208,22 @@ class Simulator:
                 v, self.car.lift_coefficient, self.car.frontal_area
             )
 
-            # Jeśli jedziemy wolniej niż max, próbujemy delikatnie przyspieszyć
+            # Jeśli jedziemy wolniej niż max, próbujemy przyspieszyć na wyjściu
             if v < max_v * 0.95:  # 5% margines
-                # Delikatne przyspieszanie w zakręcie (ograniczona moc)
-                f_engine = forces.engine_force(self.car.engine_force) * 0.3
-                # Siła dośrodkowa nie wpływa na ruch wzdłuż toru (tylko poprzecznie)
+                # Koło tarcia: w zakręcie część przyczepności zużywa siła dośrodkowa
+                f_traction = forces.traction_limit(
+                    v, self.car.tire_friction, self.car.mass,
+                    self.car.lift_coefficient, self.car.frontal_area
+                ) * 0.7
+                f_engine = forces.engine_force(
+                    v, self.car.engine_power, f_traction
+                )
                 net_force = f_engine - f_drag
                 a = dynamics.acceleration(net_force, self.car.mass)
                 vehicle_state = "cornering_accel"
             elif v > max_v:
-                # Za szybko - lekkie hamowanie
-                braking_force = self.car.max_braking_force * 0.2  # Delikatne hamowanie
-                net_force = -(braking_force + f_drag)
+                # Za szybko - pełne hamowanie
+                net_force = -(self.car.max_braking_force + f_drag)
                 a = dynamics.acceleration(net_force, self.car.mass)
                 vehicle_state = "cornering_brake"
             else:
@@ -222,6 +234,10 @@ class Simulator:
             new_x, new_v = dynamics.integrate_step(
                 state["position"], v, a, self.dt
             )
+            # Twarde egzekwowanie granicy przyczepności: w zakręcie bolid nie może
+            # przekroczyć prędkości maksymalnej (inaczej fizycznie wypadłby z toru).
+            if new_v > max_v:
+                new_v = max_v
             state["position"] = new_x
             state["velocity"] = new_v
             state["time"] += self.dt

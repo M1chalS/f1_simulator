@@ -3,27 +3,93 @@
   "segments": [
     {
       "type": "straight",
-      "length": 280
+      "length": 300
     },
     {
       "type": "corner",
-      "radius": 12,
-      "angle": 80,
+      "radius": 45,
+      "angle": 70,
       "direction": "right"
     },
     {
       "type": "straight",
-      "length": 175
+      "length": 361
     },
     {
       "type": "corner",
-      "radius": 150,
-      "angle": 30,
+      "radius": 57,
+      "angle": 90,
       "direction": "left"
     },
     {
       "type": "straight",
-      "length": 80
+      "length": 72
+    },
+    {
+      "type": "corner",
+      "radius": 50,
+      "angle": 75,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 120
+    },
+    {
+      "type": "corner",
+      "radius": 31,
+      "angle": 95,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 84
+    },
+    {
+      "type": "corner",
+      "radius": 12,
+      "angle": 180,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 66
+    },
+    {
+      "type": "corner",
+      "radius": 42,
+      "angle": 60,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 72
+    },
+    {
+      "type": "corner",
+      "radius": 33,
+      "angle": 95,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 144
+    },
+    {
+      "type": "corner",
+      "radius": 130,
+      "angle": 35,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 409
+    },
+    {
+      "type": "corner",
+      "radius": 31,
+      "angle": 50,
+      "direction": "right"
     },
     {
       "type": "corner",
@@ -33,167 +99,69 @@
     },
     {
       "type": "straight",
-      "length": 50
+      "length": 180
     },
     {
       "type": "corner",
-      "radius": 30,
-      "angle": 45,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 60
-    },
-    {
-      "type": "corner",
-      "radius": 15,
+      "radius": 57,
       "angle": 80,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 50
-    },
-    {
-      "type": "corner",
-      "radius": 10,
-      "angle": 180,
       "direction": "left"
     },
     {
       "type": "straight",
-      "length": 55
+      "length": 66
     },
     {
       "type": "corner",
-      "radius": 18,
+      "radius": 62,
+      "angle": 55,
+      "direction": "left"
+    },
+    {
+      "type": "corner",
+      "radius": 52,
+      "angle": 55,
+      "direction": "right"
+    },
+    {
+      "type": "straight",
+      "length": 54
+    },
+    {
+      "type": "corner",
+      "radius": 42,
       "angle": 70,
       "direction": "right"
     },
     {
-      "type": "straight",
-      "length": 60
-    },
-    {
       "type": "corner",
-      "radius": 20,
-      "angle": 90,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 40
-    },
-    {
-      "type": "corner",
-      "radius": 190,
-      "angle": 30,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 80
-    },
-    {
-      "type": "corner",
-      "radius": 8,
-      "angle": 60,
+      "radius": 45,
+      "angle": 70,
       "direction": "left"
     },
     {
       "type": "straight",
-      "length": 20
+      "length": 66
     },
     {
       "type": "corner",
-      "radius": 8,
-      "angle": 60,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 90
-    },
-    {
-      "type": "corner",
-      "radius": 25,
-      "angle": 50,
-      "direction": "left"
-    },
-    {
-      "type": "straight",
-      "length": 95
-    },
-    {
-      "type": "corner",
-      "radius": 12,
-      "angle": 50,
-      "direction": "left"
-    },
-    {
-      "type": "straight",
-      "length": 20
-    },
-    {
-      "type": "corner",
-      "radius": 12,
-      "angle": 50,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 40
-    },
-    {
-      "type": "corner",
-      "radius": 15,
-      "angle": 50,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 25
-    },
-    {
-      "type": "corner",
-      "radius": 15,
-      "angle": 50,
-      "direction": "left"
-    },
-    {
-      "type": "straight",
-      "length": 40
-    },
-    {
-      "type": "corner",
-      "radius": 18,
-      "angle": 45,
-      "direction": "right"
-    },
-    {
-      "type": "straight",
-      "length": 50
-    },
-    {
-      "type": "corner",
-      "radius": 12,
+      "radius": 27,
       "angle": 150,
       "direction": "right"
     },
     {
       "type": "straight",
-      "length": 100
+      "length": 54
     },
     {
       "type": "corner",
-      "radius": 20,
-      "angle": 70,
+      "radius": 42,
+      "angle": 90,
       "direction": "right"
     },
     {
       "type": "straight",
-      "length": 280
+      "length": 312
     }
   ]
 }

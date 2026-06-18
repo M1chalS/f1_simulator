@@ -1,31 +1,10 @@
 #!/usr/bin/env python3
-"""
-Optymalizacja strategii hamowania.
-
-Testuje różne współczynniki bezpieczeństwa hamowania aby znaleźć
-optymalny balans między bezpieczeństwem a czasem okrążenia.
-"""
 
 from simulation.car import Car
 from simulation.track import Track
 from simulation.simulator import Simulator
-import sys
-
 
 def test_braking_margin(car: Car, track: Track, margin: float, dt: float = 0.005) -> dict:
-    """
-    Testuje symulację z danym
-    marginesem hamowania.
-
-    Args:
-        car: Konfiguracja bolidu
-        track: Tor
-        margin: Margines bezpieczeństwa hamowania (1.0 = 100%, 1.05 = 105%)
-        dt: Krok czasowy
-
-    Returns:
-        Dict z wynikami: czas, V-max, liczba hamowań, całkowity dystans hamowania
-    """
     # Tymczasowo modyfikujemy simulator aby używał tego marginesu
     # (w produkcji można to dodać jako parametr do konstruktora)
     sim = Simulator(car, track, dt=dt)
@@ -88,7 +67,11 @@ def test_braking_margin(car: Car, track: Track, margin: float, dt: float = 0.005
                     a = 0.0
                     vehicle_state = "coasting"
             else:
-                f_engine = forces.engine_force(car.engine_force)
+                f_traction = forces.traction_limit(
+                    v, car.tire_friction, car.mass,
+                    car.lift_coefficient, car.frontal_area
+                )
+                f_engine = forces.engine_force(v, car.engine_power, f_traction)
                 net_force = f_engine - f_drag
                 a = dynamics.acceleration(net_force, car.mass)
                 vehicle_state = "accelerating"
