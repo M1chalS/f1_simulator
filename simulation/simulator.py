@@ -16,6 +16,7 @@ class Telemetry:
     drag_force: list[float] = field(default_factory=list)
     downforce: list[float] = field(default_factory=list)
     state: list[str] = field(default_factory=list)  # "accelerating", "braking", "coasting", "cornering"
+    braking_points: list[tuple[float, float, float]] = field(default_factory=list)  # (position, velocity, target_velocity)
 
     def record(self, t: float, x: float, v: float, a: float, seg: int,
                drag: float = 0.0, down: float = 0.0, state: str = "coasting") -> None:
@@ -27,6 +28,9 @@ class Telemetry:
         self.drag_force.append(drag)
         self.downforce.append(down)
         self.state.append(state)
+
+    def record_braking_point(self, position: float, velocity: float, target_velocity: float) -> None:
+        self.braking_points.append((position, velocity, target_velocity))
 
 
 @dataclass
@@ -40,6 +44,9 @@ class SimulationResult:
     max_downforce: float = 0.0
     avg_drag: float = 0.0
     avg_downforce: float = 0.0
+    braking_count: int = 0
+    total_braking_distance: float = 0.0
+    total_braking_time: float = 0.0
 
     def summary(self) -> str:
         return (
@@ -53,7 +60,11 @@ class SimulationResult:
             f"Max drag:            {self.max_drag:.0f} N\n"
             f"Max downforce:       {self.max_downforce:.0f} N\n"
             f"Avg drag:            {self.avg_drag:.0f} N\n"
-            f"Avg downforce:       {self.avg_downforce:.0f} N"
+            f"Avg downforce:       {self.avg_downforce:.0f} N\n"
+            f"\nHamowanie:\n"
+            f"Liczba hamowań:      {self.braking_count}\n"
+            f"Całkowity dystans:   {self.total_braking_distance:.1f} m\n"
+            f"Całkowity czas:      {self.total_braking_time:.2f} s"
         )
 
 
@@ -128,6 +139,10 @@ class Simulator:
 
             # Sprawdź czy jesteśmy w fazie hamowania
             if braking_point is not None and state["position"] >= braking_point:
+                # Rejestruj punkt hamowania (tylko raz)
+                if vehicle_state != "braking":
+                    telemetry.record_braking_point(state["position"], v, target_velocity or 0.0)
+
                 # Hamowanie
                 net_force = -(self.car.max_braking_force + f_drag)
                 a = dynamics.acceleration(net_force, self.car.mass)
@@ -237,6 +252,28 @@ class Simulator:
         max_down = max(telemetry.downforce) if telemetry.downforce else 0.0
         avg_drag = sum(telemetry.drag_force) / len(telemetry.drag_force) if telemetry.drag_force else 0.0
         avg_down = sum(telemetry.downforce) / len(telemetry.downforce) if telemetry.downforce else 0.0
+        
+        # Statystyki hamowania
+        braking_count = len(telemetry.braking_points)
+        total_braking_distance = 0.0
+        total_braking_time = 0.0
+        
+        # Oblicz całkowity dystans i czas hamowania
+        in_braking = False
+        braking_start_idx = 0
+        
+        for i, state_name in enumerate(telemetry.state):
+            if state_name == "braking" and not in_braking:
+                in_braking = True
+                braking_start_idx = i
+            elif state_name != "braking" and in_braking:
+                in_braking = False
+                # Oblicz dystans i czas hamowania
+                if i > braking_start_idx:
+                    brake_dist = telemetry.position[i] - telemetry.position[braking_start_idx]
+                    brake_time = telemetry.time[i] - telemetry.time[braking_start_idx]
+                    total_braking_distance += brake_dist
+                    total_braking_time += brake_time
 
         return SimulationResult(
             telemetry=telemetry,
@@ -248,5 +285,8 @@ class Simulator:
             max_downforce=max_down,
             avg_drag=avg_drag,
             avg_downforce=avg_down,
+            braking_count=braking_count,
+            total_braking_distance=total_braking_distance,
+            total_braking_time=total_braking_time,
         )
 

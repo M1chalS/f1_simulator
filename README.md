@@ -15,8 +15,10 @@ Symulator demonstruje praktyczne zastosowanie:
 
 - ✅ **Pełna fizyka:** II zasada Newtona, siły aerodynamiczne, przyczepność
 - ✅ **3 konfiguracje aerodynamiczne:** HIGH DOWNFORCE, LOW DRAG, BALANCED
-- ✅ **Telemetria:** prędkość, przyspieszenie, siły aerodynamiczne, stan pojazdu
-- ✅ **Wizualizacja:** wykresy prędkości, przyspieszenia, drag, downforce
+- ✅ **Inteligentne hamowanie:** automatyczne wyznaczanie punktu hamowania przed zakrętem
+- ✅ **Optymalizacja przejazdu:** dobór marginesu hamowania (bezpieczeństwo vs czas)
+- ✅ **Telemetria:** prędkość, przyspieszenie, siły aerodynamiczne, stan pojazdu, punkty hamowania
+- ✅ **Wizualizacja:** wykresy prędkości, przyspieszenia, drag, downforce, analiza hamowania
 - ✅ **Porównania:** analiza wpływu setupu aero na czasy okrążeń
 
 ## 📦 Instalacja
@@ -54,12 +56,23 @@ Wykresy sił aerodynamicznych:
 python main.py --show-aero
 ```
 
+Analiza hamowania (punkty hamowania, prędkości docelowe):
+```bash
+python main.py --show-braking
+```
+
 Precyzyjna symulacja (krok 5ms):
 ```bash
 python main.py --dt 0.005
 ```
 
 ### Narzędzia analizy
+
+Optymalizacja strategii hamowania (dobór marginesu bezpieczeństwa):
+```bash
+python optimize_braking.py --track data/monaco.json
+python optimize_braking.py --track data/monza.json --aero-config low_drag
+```
 
 Porównanie wszystkich konfiguracji aero na danym torze:
 ```bash
@@ -104,3 +117,27 @@ python demo.py
 - **Automatyczne hamowanie** przed zakrętami
 - **Regulacja prędkości** w zakręcie (przyspieszanie/hamowanie/utrzymywanie)
 - **Wpływ docisku** na maksymalną prędkość w zakrętach
+
+## 🛑 Hamowanie i optymalizacja przejazdu
+
+Symulator wyznacza punkt rozpoczęcia hamowania przed każdym zakrętem na
+podstawie aktualnej prędkości, prędkości docelowej w zakręcie oraz dostępnej
+siły hamowania (z uwzględnieniem oporu powietrza).
+
+- **Droga hamowania** liczona analitycznie (`braking_distance`) oraz
+  numerycznie (`braking_distance_precise`, zwraca dystans i czas).
+- **Margines bezpieczeństwa** — punkt hamowania jest przesuwany o margines
+  (domyślnie 105% drogi hamowania), aby uniknąć przekroczenia prędkości w zakręcie.
+- **Optymalizacja marginesu** — `optimize_braking.py` testuje zakres marginesów
+  i wskazuje najlepszy kompromis między czasem okrążenia a bezpieczeństwem.
+- **Energia hamowania** (`braking_energy`) — rozpraszana energia kinetyczna [J].
+
+### Telemetria hamowania
+
+W wynikach symulacji raportowane są dodatkowo:
+- liczba hamowań na okrążeniu,
+- całkowity dystans hamowania [m],
+- całkowity czas hamowania [s],
+- punkty hamowania (pozycja, prędkość początkowa, prędkość docelowa).
+
+Szczegółową analizę można zwizualizować flagą `--show-braking`.

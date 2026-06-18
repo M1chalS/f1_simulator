@@ -33,6 +33,10 @@ def parse_args() -> argparse.Namespace:
         "--show-aero", action="store_true",
         help="Pokaż dodatkowe wykresy sił aerodynamicznych.",
     )
+    parser.add_argument(
+        "--show-braking", action="store_true",
+        help="Pokaż szczegółową analizę hamowania.",
+    )
     return parser.parse_args()
 
 
@@ -65,11 +69,14 @@ def main() -> None:
 
     if not args.no_plot:
         try:
-            from visualization.plots import plot_telemetry, plot_aerodynamics
+            from visualization.plots import plot_telemetry, plot_aerodynamics, plot_braking_analysis
             plot_telemetry(result.telemetry)
             
             if args.show_aero:
                 plot_aerodynamics(result.telemetry)
+            
+            if args.show_braking:
+                plot_braking_analysis(result.telemetry)
         except ImportError:
             print("\n[Uwaga] matplotlib nie jest zainstalowany — pomijam wykresy.")
 

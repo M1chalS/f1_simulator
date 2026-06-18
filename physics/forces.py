@@ -65,4 +65,54 @@ def braking_distance(initial_velocity: float, final_velocity: float,
 
     return max(0.0, distance)
 
+# Dokładniejsze obliczanie drogi hamowania metodą numeryczną
+def braking_distance_precise(initial_velocity: float, final_velocity: float,
+                             max_braking_force: float, mass: float,
+                             drag_coefficient: float, frontal_area: float,
+                             air_density: float = AIR_DENSITY,
+                             dt: float = 0.01) -> tuple[float, float]:
+    if initial_velocity <= final_velocity:
+        return (0.0, 0.0)
+    
+    v = initial_velocity
+    distance = 0.0
+    time = 0.0
+    
+    while v > final_velocity:
+        # Oblicz siłę oporu przy aktualnej prędkości
+        f_drag = drag_force(v, drag_coefficient, frontal_area, air_density)
+        
+        # Całkowita siła hamująca
+        total_braking = max_braking_force + f_drag
+        
+        # Opóźnienie
+        deceleration = total_braking / mass
+        
+        # Nowa prędkość
+        v_new = v - deceleration * dt
+        
+        # Jeśli spadliśmy poniżej prędkości docelowej, skoryguj ostatni krok
+        if v_new < final_velocity:
+            # Oblicz dokładnie potrzebny czas do osiągnięcia v_final
+            dt_actual = (v - final_velocity) / deceleration
+            distance += v * dt_actual - 0.5 * deceleration * dt_actual ** 2
+            time += dt_actual
+            break
+        
+        # Standardowy krok
+        distance += v * dt - 0.5 * deceleration * dt ** 2
+        time += dt
+        v = v_new
+    
+    return (max(0.0, distance), time)
+
+# Oblicza energię rozpraszaną podczas hamowania
+def braking_energy(initial_velocity: float, final_velocity: float,
+                   mass: float) -> float:
+    """
+    Oblicza energię kinetyczną rozpraszaną podczas hamowania [J].
+    E = 0.5 * m * (v_i^2 - v_f^2)
+    """
+    return 0.5 * mass * (initial_velocity**2 - final_velocity**2)
+
 
