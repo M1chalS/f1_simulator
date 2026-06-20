@@ -4,7 +4,7 @@ from simulation.car import Car
 from simulation.track import Track
 from simulation.simulator import Simulator
 
-def test_braking_margin(car: Car, track: Track, margin: float, dt: float = 0.005) -> dict:
+def test_braking_margin(car: Car, track: Track, margin: float, dt: float = 0.0005) -> dict:
     # Tymczasowo modyfikujemy simulator aby używał tego marginesu
     # (w produkcji można to dodać jako parametr do konstruktora)
     sim = Simulator(car, track, dt=dt)

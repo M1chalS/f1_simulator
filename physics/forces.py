@@ -43,7 +43,7 @@ def max_corner_velocity(radius: float, tire_friction: float, mass: float,
                         air_density: float = AIR_DENSITY,
                         gravity: float = GRAVITY,
                         max_lateral_g: float = MAX_LATERAL_G) -> float:
-    # Limit saturacji opon: niezależnie od docisku opona nie przekroczy pewnego
+    # Limit saturacji opon: niezależnie od docisku opona nie przekroczy pewnego przyspieszenia bocznego.
     v_sat = math.sqrt(max_lateral_g * gravity * radius)
 
     # Limit z bilansu przyczepności (model punktowy z dociskiem):
@@ -75,6 +75,8 @@ def braking_distance(initial_velocity: float, final_velocity: float,
     distance = (final_velocity**2 - initial_velocity**2) / (-2 * deceleration)
 
     return max(0.0, distance)
+
+# Finalnie nieużyte
 
 # Dokładniejsze obliczanie drogi hamowania metodą numeryczną
 def braking_distance_precise(initial_velocity: float, final_velocity: float,
